@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clips Rating Panel – Comparative Analysis</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --text:#f2f3f5; --muted:#9aa0aa; --accent:#3d8bff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding:24px 24px 8px; text-align:center; }
+  header h1 { margin:0; font-size:20px; font-weight:600; }
+  header p { margin:6px 0 0; color:var(--muted); font-size:14px; }
+  .grid { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding:20px; }
+  .card { background:var(--card); border-radius:14px; padding:14px; width:min(340px, 100%);
+          display:flex; flex-direction:column; gap:10px; }
+  .card h2 { margin:0; font-size:17px; font-weight:600; text-align:center; }
+  video { width:100%; aspect-ratio:1290/2796; object-fit:contain; background:#000;
+          border-radius:10px; display:block; cursor:pointer; }
+  .controls { display:flex; align-items:center; gap:10px; }
+  button { flex:none; width:38px; height:38px; border-radius:50%; border:0; background:var(--accent);
+           color:#fff; font-size:15px; cursor:pointer; display:grid; place-items:center; }
+  button:focus-visible, input:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  input[type=range] { flex:1; accent-color:var(--accent); cursor:pointer; }
+  .time { font-variant-numeric:tabular-nums; font-size:12px; color:var(--muted); min-width:72px; text-align:right; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Short-form video player comparison</h1>
+  <p>FB Reels · YouTube Shorts · LinkedIn Video</p>
+</header>
+<main class="grid">
+  <section class="card">
+    <h2>FB Reels</h2>
+    <video src="videos/fb-reels.mp4" playsinline preload="metadata"></video>
+    <div class="controls"><button aria-label="Play">▶</button><input type="range" min="0" max="1000" value="0" aria-label="Scrub FB Reels"><span class="time">0:00 / 0:00</span></div>
+  </section>
+  <section class="card">
+    <h2>YouTube Shorts</h2>
+    <video src="videos/youtube-shorts.mp4" playsinline preload="metadata"></video>
+    <div class="controls"><button aria-label="Play">▶</button><input type="range" min="0" max="1000" value="0" aria-label="Scrub YouTube Shorts"><span class="time">0:00 / 0:00</span></div>
+  </section>
+  <section class="card">
+    <h2>LinkedIn Video</h2>
+    <video src="videos/linkedin-video.mp4" playsinline preload="metadata"></video>
+    <div class="controls"><button aria-label="Play">▶</button><input type="range" min="0" max="1000" value="0" aria-label="Scrub LinkedIn Video"><span class="time">0:00 / 0:00</span></div>
+  </section>
+</main>
+<script>
+  const fmt = s => isFinite(s) ? `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}` : '0:00';
+  document.querySelectorAll('.card').forEach(card => {
+    const v = card.querySelector('video'), btn = card.querySelector('button'),
+          bar = card.querySelector('input'), t = card.querySelector('.time');
+    let scrubbing = false;
+    const toggle = () => v.paused ? v.play() : v.pause();
+    const update = () => {
+      if (!scrubbing && v.duration) bar.value = (v.currentTime / v.duration) * 1000;
+      t.textContent = `${fmt(v.currentTime)} / ${fmt(v.duration)}`;
+    };
+    btn.addEventListener('click', toggle);
+    v.addEventListener('click', toggle);
+    v.addEventListener('play',  () => { btn.textContent = '❚❚'; btn.setAttribute('aria-label','Pause'); });
+    v.addEventListener('pause', () => { btn.textContent = '▶'; btn.setAttribute('aria-label','Play'); });
+    v.addEventListener('ended', () => { btn.textContent = '▶'; btn.setAttribute('aria-label','Play'); });
+    v.addEventListener('timeupdate', update);
+    v.addEventListener('loadedmetadata', update);
+    bar.addEventListener('input', () => { scrubbing = true; if (v.duration) v.currentTime = (bar.value / 1000) * v.duration; update(); });
+    bar.addEventListener('change', () => { scrubbing = false; });
+  });
+</script>
+</body>
+</html>
